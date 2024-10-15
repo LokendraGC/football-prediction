@@ -13,8 +13,10 @@ Route::controller(AuthController::class)->group(function () {
     Route::get('user', 'userProfile')->middleware('auth:sanctum');
     Route::get('logout', 'userLogout')->middleware('auth:sanctum');
 
+    Route::get('/send-verify-mail/{email}','sendVerifyMail');
+
 });
 
 
-Route::post('send-password-reset-email',[PasswordResetController::class,'send_reset_password']);
-Route::post('reset-password/{token}',[PasswordResetController::class,'reset']);
+Route::post('send-password-reset-email', [PasswordResetController::class, 'send_reset_password']);
+Route::post('reset-password/{token}', [PasswordResetController::class, 'reset']);
