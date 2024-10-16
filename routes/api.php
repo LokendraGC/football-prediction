@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PasswordResetController;
+use App\Http\Middleware\EnsureEmailIsVerified;
 use Illuminate\Support\Facades\Route;
 
 
@@ -10,8 +11,8 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('register', 'register');
     Route::post('login', 'login');
 
-    Route::get('user', 'userProfile')->middleware('auth:sanctum');
-    Route::get('logout', 'userLogout')->middleware('auth:sanctum');
+    Route::get('user', 'userProfile')->middleware(['auth:sanctum',EnsureEmailIsVerified::class]);
+    Route::get('logout', 'userLogout')->middleware(['auth:sanctum',EnsureEmailIsVerified::class]);
 
     Route::get('/send-verify-mail/{email}','sendVerifyMail');
 
