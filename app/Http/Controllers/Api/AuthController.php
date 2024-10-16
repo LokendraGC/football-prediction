@@ -9,8 +9,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\Str;
+use Laravolt\Avatar\Facade as Avatar;
 
 class AuthController extends Controller
 {
@@ -34,11 +36,48 @@ class AuthController extends Controller
             'is_verified' => 0
         ]);
 
+        Avatar::create($request->name)
+            ->save(storage_path('app/public/avatar-' . $user->id . '.png'));
+
         if ($user) {
             return response()->json(['message' => 'User Registered Successfully'], 200);
         } else {
             return response()->json(['message' => 'Unable to register User'], 400);
         }
+    }
+
+    public function updateAvatar(Request $request)
+    {
+
+        return $request->all();
+        
+        $request->validate([
+            'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validate file type and size
+        ]);
+
+        $user = auth()->user();
+
+        if ($request->hasFile('avatar')) {
+
+            if ($user->avatar) {
+                Storage::delete($user->avatar);
+            }
+
+            // Store the new avatar
+            $file = $request->file('avatar');
+            $filePath = 'avatar-' . $user->id . '.' . $file->getClientOriginalExtension();
+            $file->storeAs('public', $filePath); 
+
+            $user->avatar = $filePath;
+            $user->save();
+        } else {
+            Avatar::create($user->name)
+                ->save(storage_path('app/public/avatar-' . $user->id . '.png'));
+
+            $user->avatar = 'avatar-' . $user->id . '.png';
+            $user->save();
+        }
+        return response()->json(['message' => 'avatar updated successfully', 'user' => $user]);
     }
 
     /**

@@ -11,13 +11,17 @@ Route::controller(AuthController::class)->group(function () {
     Route::post('register', 'register');
     Route::post('login', 'login');
 
-    Route::get('user', 'userProfile')->middleware(['auth:sanctum',EnsureEmailIsVerified::class]);
-    Route::get('logout', 'userLogout')->middleware(['auth:sanctum',EnsureEmailIsVerified::class]);
+    Route::middleware(['auth:sanctum', EnsureEmailIsVerified::class])->group(function () {
+        Route::get('user', 'userProfile');
+        Route::get('logout', 'userLogout');
+        Route::post('update-avatar', 'updateAvatar');
+    });
 
-    Route::get('/send-verify-mail/{email}','sendVerifyMail');
-
+    Route::get('/send-verify-mail/{email}', 'sendVerifyMail');
 });
 
 
-Route::post('send-password-reset-email', [PasswordResetController::class, 'send_reset_password']);
-Route::post('reset-password/{token}', [PasswordResetController::class, 'reset']);
+Route::controller(PasswordResetController::class)->group(function () {
+    Route::post('send-password-reset-email', 'send_reset_password');
+    Route::post('reset-password/{token}', 'reset');
+});
