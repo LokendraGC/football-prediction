@@ -65,11 +65,11 @@ class AuthController extends Controller
                 Storage::delete($user->avatar);
             }
 
-            $file = $request->file('avatar');
+            // $file = $request->file('avatar');
             // $fileName = 'avatar-' . $user->id() . '.' . $file->getClientOriginalExtension();
 
             $path = $request->file('avatar')->store('avatars', 'public');
-            // $fileUrl = Storage::url($path);
+            $fileUrl = Storage::url($path);
 
 
             $user->avatar = $path;
@@ -78,10 +78,22 @@ class AuthController extends Controller
             Avatar::create($user->name)
                 ->save(storage_path('app/public/avatar-' . $user->id . '.png'));
 
+
+            $fileName = 'avatar-' . $user->id . '.png';
+
+            $filePath = 'avatars/' . $fileName;
+
+            
+            Storage::disk('public')->put($filePath, file_get_contents(storage_path('app/public/' . $fileName)));
+
+            // Generate the public URL for the avatar
+            $fileUrl = Storage::url($filePath);
+
+            
             $user->avatar = 'avatar-' . $user->id . '.png';
             $user->save();
         }
-        return response()->json(['message' => 'avatar updated successfully', 'user' => $user]);
+        return response()->json(['message' => 'avatar updated successfully', 'user' => $user, 'fileURL' => $fileUrl]);
     }
 
     /**
