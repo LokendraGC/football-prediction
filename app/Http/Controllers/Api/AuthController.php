@@ -49,26 +49,30 @@ class AuthController extends Controller
     public function updateAvatar(Request $request)
     {
 
-        return $request->all();
-        
+
         $request->validate([
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validate file type and size
         ]);
 
+
+
+        // $fileUrl = Storage::url($path);
+
         $user = auth()->user();
 
         if ($request->hasFile('avatar')) {
-
             if ($user->avatar) {
                 Storage::delete($user->avatar);
             }
 
-            // Store the new avatar
             $file = $request->file('avatar');
-            $filePath = 'avatar-' . $user->id . '.' . $file->getClientOriginalExtension();
-            $file->storeAs('public', $filePath); 
+            // $fileName = 'avatar-' . $user->id() . '.' . $file->getClientOriginalExtension();
 
-            $user->avatar = $filePath;
+            $path = $request->file('avatar')->store('avatars', 'public');
+            // $fileUrl = Storage::url($path);
+
+
+            $user->avatar = $path;
             $user->save();
         } else {
             Avatar::create($user->name)

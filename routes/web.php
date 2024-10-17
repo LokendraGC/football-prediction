@@ -25,3 +25,5 @@ Route::get('/', function () {
 
 
 Route::get('verify-mail/{token}',[AuthController::class,'verifyToken']);
+Route::view('update-avatar','updateimg');
+Route::post('update-avatar/{id}', [AuthController::class,'updateAvatar']);
