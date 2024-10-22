@@ -33,7 +33,8 @@ class AuthController extends Controller
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'is_verified' => 0
+            'is_verified' => 0,
+            'is_admin' => 0
         ]);
 
         Avatar::create($request->name)
@@ -45,6 +46,37 @@ class AuthController extends Controller
             return response()->json(['message' => 'Unable to register User'], 400);
         }
     }
+
+
+    /**
+     * User Login
+     */
+    public function login(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required'
+        ]);
+
+        // return Auth::user();
+
+        if (!Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+
+            return response()->json(['message' => 'Unable to login User'], 400);
+        }
+
+        $user = Auth::user();
+
+        $token = $user->createToken('My Api Token')->plainTextToken;
+
+        $auth_user = [
+            'user' => $user,
+            'token' => $token
+        ];
+
+        return response()->json(['message' => 'User Logged in successfully', 'user_detail' => $auth_user]);
+    }
+
 
     public function updateAvatar(Request $request)
     {
@@ -58,6 +90,7 @@ class AuthController extends Controller
 
         // $fileUrl = Storage::url($path);
 
+        // $user = Auth::user();
         $user = auth()->user();
 
         if ($request->hasFile('avatar')) {
@@ -78,51 +111,23 @@ class AuthController extends Controller
             Avatar::create($user->name)
                 ->save(storage_path('app/public/avatar-' . $user->id . '.png'));
 
-
             $fileName = 'avatar-' . $user->id . '.png';
 
             $filePath = 'avatars/' . $fileName;
 
-            
+
             Storage::disk('public')->put($filePath, file_get_contents(storage_path('app/public/' . $fileName)));
 
             // Generate the public URL for the avatar
             $fileUrl = Storage::url($filePath);
 
-            
+
             $user->avatar = 'avatar-' . $user->id . '.png';
             $user->save();
         }
         return response()->json(['message' => 'avatar updated successfully', 'user' => $user, 'fileURL' => $fileUrl]);
     }
 
-    /**
-     * User Login
-     */
-    public function login(Request $request)
-    {
-        $request->validate([
-            'email' => 'required|email',
-            'password' => 'required'
-        ]);
-
-        if (!Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
-
-            return response()->json(['message' => 'Unable to login User'], 400);
-        }
-
-        $user = Auth::user();
-
-        $token = $user->createToken('My Api Token')->plainTextToken;
-
-        $auth_user = [
-            'user' => $user,
-            'token' => $token
-        ];
-
-
-        return response()->json(['message' => 'User Logged in successfully', 'user_detail' => $auth_user]);
-    }
 
     public function sendVerifyMail($email)
     {

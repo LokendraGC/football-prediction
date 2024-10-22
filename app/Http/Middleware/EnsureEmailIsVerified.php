@@ -16,6 +16,8 @@ class EnsureEmailIsVerified
      * @param  \Closure  $next
      * @return mixed
      */
+
+   // Perform action if the user is logged in but not verified
     public function handle(Request $request, Closure $next)
     {
         if (Auth::check() && !Auth::user()->is_verified) {

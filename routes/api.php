@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PasswordResetController;
 use App\Http\Middleware\EnsureEmailIsVerified;
@@ -16,8 +17,12 @@ Route::controller(AuthController::class)->group(function () {
         Route::get('logout', 'userLogout');
         Route::post('update-avatar', 'updateAvatar');
     });
-
     Route::get('/send-verify-mail/{email}', 'sendVerifyMail');
+});
+
+
+Route::controller(AdminController::class)->group(function () {
+    Route::post('admin/login', 'admin_login');
 });
 
 
