@@ -34,11 +34,25 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'is_verified' => 0,
-            'is_admin' => 0
+            'is_admin' => 'user'
         ]);
 
-        Avatar::create($request->name)
+        Avatar::create($user->name)
             ->save(storage_path('app/public/avatar-' . $user->id . '.png'));
+
+        $fileName = 'avatar-' . $user->id . '.png';
+
+        $filePath = 'avatars/' . $fileName;
+
+
+        Storage::disk('public')->put($filePath, file_get_contents(storage_path('app/public/' . $fileName)));
+
+        // Generate the public URL for the avatar
+        // $fileUrl = Storage::url($filePath);
+
+
+        $user->avatar = 'avatar-' . $user->id . '.png';
+        $user->save();
 
         if ($user) {
             return response()->json(['message' => 'User Registered Successfully'], 200);
@@ -53,14 +67,14 @@ class AuthController extends Controller
      */
     public function login(Request $request)
     {
-        $request->validate([
+        $credentials =  $request->validate([
             'email' => 'required|email',
             'password' => 'required'
         ]);
 
         // return Auth::user();
 
-        if (!Auth::attempt(['email' => $request->email, 'password' => $request->password])) {
+        if (!Auth::attempt($credentials)) {
 
             return response()->json(['message' => 'Unable to login User'], 400);
         }
@@ -81,32 +95,23 @@ class AuthController extends Controller
     public function updateAvatar(Request $request)
     {
 
-
         $request->validate([
             'avatar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048', // Validate file type and size
         ]);
 
-
-
-        // $fileUrl = Storage::url($path);
-
-        // $user = Auth::user();
         $user = auth()->user();
 
         if ($request->hasFile('avatar')) {
+
             if ($user->avatar) {
-                Storage::delete($user->avatar);
+                Storage::disk('public')->delete('avatars/' . $user->avatar);
             }
 
-            // $file = $request->file('avatar');
-            // $fileName = 'avatar-' . $user->id() . '.' . $file->getClientOriginalExtension();
-
             $path = $request->file('avatar')->store('avatars', 'public');
-            $fileUrl = Storage::url($path);
-
-
-            $user->avatar = $path;
+            $fileName = basename($path);
+            $user->avatar = $fileName;
             $user->save();
+            $fileUrl = Storage::url($path);
         } else {
             Avatar::create($user->name)
                 ->save(storage_path('app/public/avatar-' . $user->id . '.png'));
@@ -115,25 +120,20 @@ class AuthController extends Controller
 
             $filePath = 'avatars/' . $fileName;
 
-
             Storage::disk('public')->put($filePath, file_get_contents(storage_path('app/public/' . $fileName)));
 
             // Generate the public URL for the avatar
             $fileUrl = Storage::url($filePath);
 
-
             $user->avatar = 'avatar-' . $user->id . '.png';
             $user->save();
         }
+
         return response()->json(['message' => 'avatar updated successfully', 'user' => $user, 'fileURL' => $fileUrl]);
     }
 
-
     public function sendVerifyMail($email)
     {
-
-        // if (Auth::user()) {
-
         $random = Str::random(40);
         $domain = URL::to('/');
         $url = $domain . "/verify-mail/" . $random;
@@ -159,21 +159,16 @@ class AuthController extends Controller
         } else {
             return response()->json(['status' => 'false', 'message' => 'User is not available']);
         }
-        // } else {
-        //     return response()->json(['status' => 'false', 'message' => 'User is not authenticated']);
-        // }
-
-
     }
 
     public function verifyToken($token)
     {
 
-        $user = User::where('remember_token', $token)->get();
+        $user = User::where('remember_token', $token)->first();
 
         if ($user) {
             $date_time = Carbon::now()->format('Y-m-d H:i:s');
-            $user = User::find($user[0]['id']);
+            // $user = User::find($user[0]['id']);
             $user->remember_token = '';
             $user->is_verified = 1;
             $user->email_verified_at = $date_time;
