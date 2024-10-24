@@ -22,10 +22,14 @@ class AdminController extends Controller
 
         $user = Auth::user();
 
+        // Check if the user is an admin
         if ($user->is_admin !== 1) {
-            return response(['message' => 'You Can not access'], 404);
+            return response(['message' => 'Only admin can access this page'], 403); 
         }
 
-        return response(['message' => 'You are logged in Successfully'], 200);
+        // Create a Sanctum token
+        $token = $user->createToken('My Api Token')->plainTextToken;
+
+        return response(['message' => 'You are logged in Successfully', 'user' => $user, 'token' => $token], 200);
     }
 }

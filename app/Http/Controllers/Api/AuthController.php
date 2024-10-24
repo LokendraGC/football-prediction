@@ -34,7 +34,7 @@ class AuthController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),
             'is_verified' => 0,
-            'is_admin' => 'user'
+            'is_admin' => 0
         ]);
 
         Avatar::create($user->name)

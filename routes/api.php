@@ -2,7 +2,9 @@
 
 use App\Http\Controllers\Api\AdminController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\MatchController;
 use App\Http\Controllers\Api\PasswordResetController;
+use App\Http\Controllers\Api\TeamController;
 use App\Http\Middleware\EnsureEmailIsVerified;
 use App\Http\Middleware\ValidUser;
 use Illuminate\Support\Facades\Route;
@@ -35,7 +37,15 @@ Route::controller(PasswordResetController::class)->group(function () {
 });
 
 
-// CRUD OF MATCH
-Route::middleware([ValidUser::class])->group(function(){
-    
+// CRUD OF MATCH AND TEAMS
+Route::middleware([ValidUser::class, 'auth:sanctum', EnsureEmailIsVerified::class])->group(function () {
+    Route::post('insert-matches', [MatchController::class, 'store']);
+
+    Route::post('insert-teams', [TeamController::class, 'storeTeam']);
+    Route::get('get-teams', [TeamController::class, 'fetchTeam']);
+    Route::get('edit-team/{id}', [TeamController::class, 'editTeam']);
+    Route::post('update-team/{id}', [TeamController::class, 'updateTeam']);
+    Route::delete('delete-team/{id}', [TeamController::class, 'deleteTeam']);
+
+
 });
