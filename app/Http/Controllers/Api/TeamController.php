@@ -98,6 +98,7 @@ class TeamController extends Controller
 
         $team->delete();
 
-        return response()->json(['message' => 'Team deleted successfully'], 200);
+            return response()->json(['message' => 'Team deleted successfully'], 200);
+
     }
 }

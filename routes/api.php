@@ -47,5 +47,9 @@ Route::middleware([ValidUser::class, 'auth:sanctum', EnsureEmailIsVerified::clas
     Route::post('update-team/{id}', [TeamController::class, 'updateTeam']);
     Route::delete('delete-team/{id}', [TeamController::class, 'deleteTeam']);
 
-
+    Route::post('insert-match', [MatchController::class, 'storeMatch']);
+    Route::get('get-match', [MatchController::class, 'fetchMatch']);
+    Route::get('edit-match/{id}', [MatchController::class, 'editMatch']);
+    Route::post('update-match/{id}', [MatchController::class, 'updateMatch']);
+    Route::delete('delete-match/{id}', [MatchController::class, 'deleteMatch']);
 });
