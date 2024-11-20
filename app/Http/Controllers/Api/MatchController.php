@@ -75,9 +75,10 @@ class MatchController extends Controller
         return response()->json(['message' => 'Match updated successfully', 'match' => $match], 200);
     }
 
-    public function deleteMatch($id)
+    public function deleteMatch(FootballMatch $match)
     {
-        $match = FootballMatch::find($id);
+        // route model binding
+        // $match = FootballMatch::find($match);
 
         if (!$match) {
             return response()->json(['message' => 'Match not found'], 404);
